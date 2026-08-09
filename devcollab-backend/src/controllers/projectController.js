@@ -110,6 +110,11 @@ const updateProject = async (req, res) => {
       const owner = await User.findById(project.ownerId);
       await pointsService.addPoints(owner, 'completeProject', req.io);
       await awardBadge(owner, 'Project Completer', req.io);
+      
+      if (project.bootcampId) {
+        await pointsService.addPoints(owner, 'completeCapstone', req.io);
+        await awardBadge(owner, 'Capstone Creator', req.io);
+      }
 
       const completedOwnedProjectsCount = await Project.countDocuments({
         ownerId: owner._id,
@@ -128,6 +133,10 @@ const updateProject = async (req, res) => {
           if (member) {
             await pointsService.addPoints(member, 'completeProject', req.io);
             await awardBadge(member, 'Project Completer', req.io);
+            if (project.bootcampId) {
+              await pointsService.addPoints(member, 'completeCapstone', req.io);
+              await awardBadge(member, 'Capstone Creator', req.io);
+            }
           }
         }
 

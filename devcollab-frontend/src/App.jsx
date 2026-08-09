@@ -19,6 +19,14 @@ import Chat from './pages/Chat';
 import Marketplace from './pages/Marketplace';
 import Leaderboard from './pages/Leaderboard';
 import PublicPortfolio from './pages/PublicPortfolio';
+import Learn from './pages/Learn';
+import BootcampDetails from './pages/BootcampDetails';
+import MyLearning from './pages/MyLearning';
+import MentorDashboard from './pages/MentorDashboard';
+import CreateBootcamp from './pages/CreateBootcamp';
+import AssignmentView from './pages/AssignmentView';
+import TransitionPage from './pages/TransitionPage';
+import RecommendedProjects from './pages/RecommendedProjects';
 
 // Layout & Common Components
 import Navbar from './components/common/Navbar';
@@ -57,6 +65,14 @@ const App = () => {
                       <Route path="/chat" element={<Chat />} />
                       <Route path="/marketplace" element={<Marketplace />} />
                       <Route path="/leaderboard" element={<Leaderboard />} />
+                      <Route path="/learn" element={<Learn />} />
+                      <Route path="/learn/bootcamp/:id" element={<BootcampDetails />} />
+                      <Route path="/learn/my-learning" element={<MyLearning />} />
+                      <Route path="/learn/mentor" element={<MentorDashboard />} />
+                      <Route path="/learn/create-bootcamp" element={<CreateBootcamp />} />
+                      <Route path="/learn/assignment/:id" element={<AssignmentView />} />
+                      <Route path="/learn/transition" element={<TransitionPage />} />
+                      <Route path="/learn/recommended-projects" element={<RecommendedProjects />} />
                     </Route>
 
                     {/* Fallback */}

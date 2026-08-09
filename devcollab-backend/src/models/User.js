@@ -92,7 +92,28 @@ const UserSchema = new Schema({
   },
 
   isPublic: { type: Boolean, default: true },
-  workingStyle: [{ type: String }]
+  workingStyle: [{ type: String }],
+  learningTrack: {
+    enrolledBootcamps: [{ 
+      bootcampId: { type: Schema.Types.ObjectId, ref: 'Bootcamp' },
+      enrolledAt: { type: Date, default: Date.now },
+      progress: { type: Number, default: 0 },
+      status: { type: String, enum: ['active', 'completed', 'dropped'], default: 'active' }
+    }],
+    completedBootcamps: [{ type: Schema.Types.ObjectId, ref: 'Bootcamp' }],
+    isMentor: { type: Boolean, default: false },
+    mentorProfile: {
+      bio: { type: String },
+      expertise: [{ type: String }],
+      rating: { type: Number, min: 0, max: 5, default: 0 },
+      totalStudents: { type: Number, default: 0 }
+    }
+  },
+  transitionStatus: {
+    isEligible: { type: Boolean, default: false },
+    recommendedProjects: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
+    transitionedAt: { type: Date }
+  }
 }, {
   timestamps: true
 });

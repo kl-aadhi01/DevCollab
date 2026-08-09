@@ -46,6 +46,12 @@ const Navbar = () => {
                   Dashboard
                 </Link>
                 <Link
+                  to="/learn"
+                  className="border-transparent text-textSecondary hover:border-primary hover:text-textPrimary inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-all"
+                >
+                  Learn
+                </Link>
+                <Link
                   to="/projects"
                   className="border-transparent text-textSecondary hover:border-primary hover:text-textPrimary inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-all"
                 >

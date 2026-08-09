@@ -28,7 +28,8 @@ const ProjectSchema = new Schema({
   memberActivity: [{
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     lastActivityAt: { type: Date, default: Date.now }
-  }]
+  }],
+  bootcampId: { type: Schema.Types.ObjectId, ref: 'Bootcamp' }
 }, {
   timestamps: true
 });
