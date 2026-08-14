@@ -7,17 +7,20 @@ const BootcampSchema = new Schema({
   mentorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   category: { type: String, enum: ['frontend', 'backend', 'fullstack', 'mobile', 'devops', 'data-science', 'cloud'] },
   level: { type: String, enum: ['beginner', 'intermediate', 'advanced'] },
-  duration: { type: String, required: true },
+  duration: { type: String, required: true }, // e.g. "6 weeks"
   prerequisites: [{ type: String }],
+  learningOutcomes: [{ type: String }],
+  skillsCovered: [{ type: String }],
   curriculum: [{
     week: { type: Number, required: true },
     title: { type: String, required: true },
     description: { type: String },
     topics: [{ type: String }],
-    resources: [{ 
+    estimatedTime: { type: String }, // e.g. "10 hours"
+    resources: [{
       title: { type: String },
       url: { type: String },
-      type: { type: String, enum: ['video', 'article', 'documentation', 'github'] }
+      type: { type: String }
     }],
     assignment: {
       title: { type: String },
@@ -39,11 +42,11 @@ const BootcampSchema = new Schema({
     assignmentsCompleted: [{ type: Schema.Types.ObjectId, ref: 'Assignment' }],
     status: { type: String, enum: ['active', 'completed', 'dropped'], default: 'active' }
   }],
+  status: { type: String, enum: ['draft', 'published'], default: 'published' },
   isActive: { type: Boolean, default: true },
   maxStudents: { type: Number, default: 30 },
   startDate: { type: Date },
-  endDate: { type: Date },
-  createdAt: { type: Date, default: Date.now }
+  endDate: { type: Date }
 }, {
   timestamps: true
 });

@@ -1,35 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTransition } from '../hooks/useTransition';
+import learnService from '../services/learnService';
 import { toast } from 'react-hot-toast';
 
 const TransitionPage = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
-  const { status, fetchStatus, executeTransition } = useTransition();
+  const [readiness, setReadiness] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [transitioning, setTransitioning] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const fetchReadiness = async () => {
+    try {
+      const data = await learnService.getBuildReadiness();
+      setReadiness(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchStatus();
-  }, []);
+    if (user) {
+      fetchReadiness();
+    }
+  }, [user]);
 
   const handleTransition = async () => {
     setTransitioning(true);
     try {
-      const res = await executeTransition();
+      const res = await learnService.transitionToBuild();
       setUser(res.user);
       toast.success('🚀 You successfully transitioned to the BUILD track! +50 XP and Ready to Build badge awarded!');
       setSuccess(true);
     } catch (err) {
-      toast.error(err || 'Failed to transition');
+      toast.error(err.response?.data?.message || err.message || 'Failed to transition');
     } finally {
       setTransitioning(false);
     }
   };
 
-  if (success) {
+  if (loading) {
+    return (
+      <div className="text-center py-24">
+        <span className="inline-block animate-spin text-4xl">⌛</span>
+        <p className="text-sm text-textSecondary mt-2">Checking graduation requirements...</p>
+      </div>
+    );
+  }
+
+  if (success || readiness?.transitionedAt) {
     return (
       <div className="max-w-md mx-auto px-4 py-24 text-center space-y-6">
         <span className="text-7xl animate-bounce inline-block">🚀</span>
@@ -72,11 +95,16 @@ const TransitionPage = () => {
         <div className="pt-4 max-w-sm mx-auto">
           <button
             onClick={handleTransition}
-            disabled={transitioning}
+            disabled={transitioning || !readiness?.isReady}
             className="w-full py-4 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/95 shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {transitioning ? 'Processing Transition...' : 'Launch into BUILD Track 🚀'}
           </button>
+          {!readiness?.isReady && (
+            <p className="text-xs text-rose-600 mt-2 font-semibold">
+              ⚠️ You must complete at least one bootcamp first.
+            </p>
+          )}
           <p className="text-[10px] text-textSecondary mt-2">
             This action awards 50 XP, unlocks BUILD privileges, and awards your "Ready to Build" badge.
           </p>

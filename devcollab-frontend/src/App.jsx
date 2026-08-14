@@ -27,6 +27,13 @@ import CreateBootcamp from './pages/CreateBootcamp';
 import AssignmentView from './pages/AssignmentView';
 import TransitionPage from './pages/TransitionPage';
 import RecommendedProjects from './pages/RecommendedProjects';
+import LearningDashboard from './pages/LearningDashboard';
+import LessonView from './pages/LessonView';
+import ExerciseView from './pages/ExerciseView';
+import GuidedProject from './pages/GuidedProject';
+import Capstone from './pages/Capstone';
+import ManageBootcamp from './pages/ManageBootcamp';
+import LearningRecommendations from './pages/LearningRecommendations';
 
 // Layout & Common Components
 import Navbar from './components/common/Navbar';
@@ -67,12 +74,19 @@ const App = () => {
                       <Route path="/leaderboard" element={<Leaderboard />} />
                       <Route path="/learn" element={<Learn />} />
                       <Route path="/learn/bootcamp/:id" element={<BootcampDetails />} />
+                      <Route path="/learn/bootcamps/:id/dashboard" element={<LearningDashboard />} />
+                      <Route path="/learn/bootcamps/:id/manage" element={<ManageBootcamp />} />
+                      <Route path="/learn/lessons/:id" element={<LessonView />} />
+                      <Route path="/learn/exercises/:id" element={<ExerciseView />} />
+                      <Route path="/learn/guided-projects/:id" element={<GuidedProject />} />
+                      <Route path="/learn/capstones/:id" element={<Capstone />} />
                       <Route path="/learn/my-learning" element={<MyLearning />} />
                       <Route path="/learn/mentor" element={<MentorDashboard />} />
                       <Route path="/learn/create-bootcamp" element={<CreateBootcamp />} />
                       <Route path="/learn/assignment/:id" element={<AssignmentView />} />
                       <Route path="/learn/transition" element={<TransitionPage />} />
                       <Route path="/learn/recommended-projects" element={<RecommendedProjects />} />
+                      <Route path="/learn/recommendations" element={<LearningRecommendations />} />
                     </Route>
 
                     {/* Fallback */}

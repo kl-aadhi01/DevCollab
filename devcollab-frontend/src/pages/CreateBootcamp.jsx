@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import bootcampService from '../services/bootcampService';
+import learnService from '../services/learnService';
 import { toast } from 'react-hot-toast';
 
 const CreateBootcamp = () => {
@@ -131,7 +131,7 @@ const CreateBootcamp = () => {
         curriculum: parsedCurriculum
       };
 
-      await bootcampService.createBootcamp(bootcampData);
+      await learnService.createBootcamp(bootcampData);
       toast.success('🎉 Bootcamp created successfully!');
       navigate('/learn');
     } catch (err) {

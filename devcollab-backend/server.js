@@ -69,6 +69,7 @@ const bootcampRoutes = require('./src/routes/bootcampRoutes');
 const assignmentRoutes = require('./src/routes/assignmentRoutes');
 const mentorRoutes = require('./src/routes/mentorRoutes');
 const transitionRoutes = require('./src/routes/transitionRoutes');
+const learnRoutes = require('./src/routes/learnRoutes');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -92,6 +93,7 @@ app.use('/api/bootcamps', bootcampRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/mentor', mentorRoutes);
 app.use('/api/transition', transitionRoutes);
+app.use('/api/learn', learnRoutes);
 app.use('/api', analyticsRoutes);
 
 const githubController = require('./src/controllers/githubController');

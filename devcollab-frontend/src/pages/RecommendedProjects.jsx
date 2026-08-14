@@ -1,12 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useTransition } from '../hooks/useTransition';
+import learnService from '../services/learnService';
 
 const RecommendedProjects = () => {
   const navigate = useNavigate();
-  const { recommendedProjects, loading, error, fetchRecommendations } = useTransition();
+  const [recommendedProjects, setRecommendedProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const data = await learnService.getRecommendedProjects();
+        setRecommendedProjects(data);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Failed to fetch recommendations');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchRecommendations();
   }, []);
 

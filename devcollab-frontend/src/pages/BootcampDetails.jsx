@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useBootcamp } from '../hooks/useBootcamp';
-import { useAssignment } from '../hooks/useAssignment';
-import { useTransition } from '../hooks/useTransition';
+import { useLearn } from '../hooks/useLearn';
 import CurriculumView from '../components/learn/CurriculumView';
-import ProgressTracker from '../components/learn/ProgressTracker';
 import MentorProfile from '../components/learn/MentorProfile';
-import StudentList from '../components/learn/StudentList';
 import CapstoneProject from '../components/learn/CapstoneProject';
-import TeamFormation from '../components/learn/TeamFormation';
-import AssignmentCard from '../components/learn/AssignmentCard';
 import { toast } from 'react-hot-toast';
 
 const BootcampDetails = () => {
@@ -18,56 +12,7 @@ const BootcampDetails = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const { bootcamp, loading, error, enroll, updateProgress } = useBootcamp(id);
-  const { assignments, fetchAssignments } = useAssignment();
-  const { buildTeam, loading: buildingTeam } = useTransition();
-
-  const [activeTab, setActiveTab] = useState('curriculum'); // 'curriculum', 'assignments', 'students'
-  const [graduates, setGraduates] = useState([]);
-
-  // Fetch assignments if user is enrolled
-  useEffect(() => {
-    if (bootcamp) {
-      fetchAssignments(bootcamp._id);
-      
-      // Calculate completed graduates for team creation
-      const grads = bootcamp.enrolledStudents?.filter(
-        s => s.status === 'completed' || s.progress >= 100
-      ) || [];
-      setGraduates(grads);
-    }
-  }, [bootcamp]);
-
-  const handleEnroll = async () => {
-    try {
-      await enroll(bootcamp._id);
-      toast.success('🎉 Successfully enrolled! Let\'s start week 1!');
-    } catch (err) {
-      toast.error(err || 'Failed to enroll');
-    }
-  };
-
-  const handleCompleteWeek = async (weekNum) => {
-    try {
-      await updateProgress(bootcamp._id, weekNum);
-      toast.success(`⚡ Week ${weekNum} marked complete! +25 XP awarded!`);
-    } catch (err) {
-      toast.error(err || 'Failed to update progress');
-    }
-  };
-
-  const handleFormCapstoneTeam = async (teamData) => {
-    try {
-      const res = await buildTeam({
-        bootcampId: bootcamp._id,
-        ...teamData
-      });
-      toast.success('🎉 Team formed successfully! Capstone project is live in BUILD track.');
-      navigate(`/projects/${res.project._id}`);
-    } catch (err) {
-      toast.error(err || 'Failed to form capstone team');
-    }
-  };
+  const { bootcampData, loading, error, enrollInBootcamp, fetchBootcampDetails } = useLearn(id);
 
   if (loading) {
     return (
@@ -78,7 +23,7 @@ const BootcampDetails = () => {
     );
   }
 
-  if (error || !bootcamp) {
+  if (error || !bootcampData) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <div className="bg-red-50 text-error p-4 rounded-xl border border-red-200 text-sm font-semibold mb-4">
@@ -91,15 +36,19 @@ const BootcampDetails = () => {
     );
   }
 
-  // Check roles
+  const { bootcamp, enrollment, lessons, exercises, assignments, guidedProject, capstone } = bootcampData;
+
   const isMentor = bootcamp.mentorId?._id === user?._id || bootcamp.mentorId === user?._id;
-  
-  const studentEnrollmentRecord = bootcamp.enrolledStudents?.find(
-    s => s.studentId?._id === user?._id || s.studentId === user?._id
-  );
-  const isEnrolled = !!studentEnrollmentRecord;
-  const studentProgress = studentEnrollmentRecord?.progress || 0;
-  const completedWeeks = studentEnrollmentRecord?.completedWeeks || [];
+  const isEnrolled = !!enrollment;
+  const studentProgress = enrollment?.progress || 0;
+
+  const handleEnroll = async () => {
+    try {
+      await enrollInBootcamp(bootcamp._id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -158,103 +107,48 @@ const BootcampDetails = () => {
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Action Tabs */}
-          <div className="border-b border-border pb-2 flex gap-4">
-            <button
-              onClick={() => setActiveTab('curriculum')}
-              className={`pb-2.5 font-bold text-sm border-b-2 transition-all ${
-                activeTab === 'curriculum'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-textSecondary hover:text-textPrimary'
-              }`}
-            >
-              📖 Syllabus
-            </button>
-            
-            {isEnrolled && (
-              <button
-                onClick={() => setActiveTab('assignments')}
-                className={`pb-2.5 font-bold text-sm border-b-2 transition-all ${
-                  activeTab === 'assignments'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-textSecondary hover:text-textPrimary'
-                }`}
-              >
-                📝 Assignments
-              </button>
-            )}
-
-            {isMentor && (
-              <>
-                <button
-                  onClick={() => setActiveTab('students')}
-                  className={`pb-2.5 font-bold text-sm border-b-2 transition-all ${
-                    activeTab === 'students'
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-textSecondary hover:text-textPrimary'
-                  }`}
-                >
-                  🧑‍🎓 Enrolled Students ({bootcamp.enrolledStudents?.length || 0})
-                </button>
-              </>
+            {bootcamp.learningOutcomes?.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-xs font-bold text-textSecondary uppercase tracking-wider mb-2">Learning Outcomes</h4>
+                <ul className="list-disc list-inside space-y-1 text-sm text-textSecondary">
+                  {bootcamp.learningOutcomes.map((outcome, idx) => (
+                    <li key={idx}>{outcome}</li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
 
-          {/* Tab Render */}
-          {activeTab === 'curriculum' && (
-            <div>
-              <CurriculumView
-                curriculum={bootcamp.curriculum || []}
-                completedWeeks={completedWeeks}
-                onCompleteWeek={handleCompleteWeek}
-                isEnrolled={isEnrolled}
-                mentorView={isMentor}
-              />
-            </div>
-          )}
-
-          {activeTab === 'assignments' && isEnrolled && (
+          {/* Curriculum Overview */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-textPrimary">Bootcamp Curriculum Overview</h3>
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-textPrimary mb-4">Course Homework</h3>
-              {assignments.length === 0 ? (
-                <p className="text-sm text-textSecondary bg-slate-50 border p-6 text-center rounded-2xl">
-                  No assignments posted for this bootcamp.
-                </p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {assignments.map(ass => {
-                    const studentSub = ass.submissions?.find(
-                      s => s.studentId === user?._id || s.studentId?._id === user?._id
-                    );
-                    return (
-                      <AssignmentCard
-                        key={ass._id}
-                        assignment={ass}
-                        submission={studentSub}
-                        isEnrolled={isEnrolled}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
+              {bootcamp.curriculum?.map((week) => {
+                const weekLessons = lessons?.filter(l => l.week === week.week) || [];
+                const weekExercises = exercises?.filter(e => e.week === week.week) || [];
+                const weekAssignment = assignments?.find(a => a.week === week.week);
 
-          {activeTab === 'students' && isMentor && (
-            <div className="space-y-6">
-              <StudentList students={bootcamp.enrolledStudents || []} />
-              
-              {graduates.length > 0 && (
-                <TeamFormation
-                  graduatesCount={graduates.length}
-                  onFormTeam={handleFormCapstoneTeam}
-                  loading={buildingTeam}
-                />
-              )}
+                return (
+                  <div key={week.week} className="p-5 border border-border rounded-2xl bg-white space-y-2">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-bold text-textPrimary">Week {week.week}: {week.title}</h4>
+                      {week.estimatedTime && (
+                        <span className="text-[10px] text-textSecondary font-semibold">⏱️ {week.estimatedTime}</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-textSecondary">{week.description}</p>
+                    
+                    <div className="flex flex-wrap gap-3 pt-2 text-[11px] text-textSecondary font-medium">
+                      <span>📖 {weekLessons.length} Lessons</span>
+                      <span>🛠️ {weekExercises.length} Exercises</span>
+                      <span>📝 {weekAssignment ? '1 Assignment' : 'No Assignment'}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Sidebar */}
@@ -275,17 +169,47 @@ const BootcampDetails = () => {
           )}
 
           {isEnrolled && (
-            <ProgressTracker
-              progress={studentProgress}
-              completedWeeksCount={completedWeeks.length}
-              totalWeeks={bootcamp.curriculum?.length || 0}
-              isEligibleForTransition={studentProgress >= 100}
-            />
+            <div className="bg-white border border-border rounded-2xl p-6 shadow-sm space-y-4">
+              <h3 className="text-lg font-bold text-textPrimary">You are Enrolled</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold text-textSecondary">
+                  <span>Current Progress</span>
+                  <span className="text-primary">{studentProgress}%</span>
+                </div>
+                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="bg-primary h-full transition-all duration-300" style={{ width: `${studentProgress}%` }}></div>
+                </div>
+              </div>
+              <Link
+                to={`/learn/bootcamps/${bootcamp._id}/dashboard`}
+                className="block w-full py-3 bg-primary hover:bg-primary/95 text-white text-center font-bold text-sm rounded-xl transition-all shadow-md"
+              >
+                Go to learning workspace
+              </Link>
+            </div>
+          )}
+
+          {isMentor && (
+            <div className="bg-white border border-border rounded-2xl p-6 shadow-sm space-y-2">
+              <h3 className="text-lg font-bold text-textPrimary">You are the Mentor</h3>
+              <Link
+                to={`/learn/bootcamps/${bootcamp._id}/manage`}
+                className="block w-full py-3 bg-primary text-white text-center font-bold text-sm rounded-xl transition-all shadow-md"
+              >
+                ⚙️ Manage Curriculum
+              </Link>
+              <Link
+                to="/learn/mentor"
+                className="block w-full py-3 bg-secondary text-white text-center font-bold text-sm rounded-xl transition-all shadow-md mt-2"
+              >
+                Go to Mentor Dashboard
+              </Link>
+            </div>
           )}
 
           <MentorProfile mentor={bootcamp.mentorId} />
           
-          <CapstoneProject capstone={bootcamp.capstoneProject} />
+          <CapstoneProject capstone={capstone} />
         </div>
       </div>
     </div>
